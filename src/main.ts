@@ -9,7 +9,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
   console.log(`App running locally on http://localhost:3000`);
 }
 
