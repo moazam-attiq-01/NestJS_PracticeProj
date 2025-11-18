@@ -1,18 +1,11 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
     {
-      "src": "src/serverless.ts",
-      "use": "@vercel/node"
+      "source": "/(.*)",
+      "destination": "/src/serverless"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/serverless.ts"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
