@@ -13,8 +13,8 @@ export const DB_CONNECTION = Symbol('DB_CONNECTION')
     {
       provide: DB_CONNECTION,
       inject: [ConfigService],
-      useFactory: (configService: ConfigService): PostgresJsDatabase<typeof schema> => {
-        const connectionString = configService.get('DATABASE_URL')
+      useFactory: (configService: ConfigService): PostgresJsDatabase<typeof schema> => { 
+        const connectionString = configService.get('DATABASE_URL') ?? configService.get('LOCAL_DATABASE')
         const client = postgres(connectionString)
         return drizzle(client, { schema })
       },
