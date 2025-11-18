@@ -1,0 +1,11 @@
+export declare const vendor: any;
+export declare const category: any;
+export declare const vendorCategory: any;
+export declare const item: any;
+export declare const itemDiscount: any;
+export declare const deal: any;
+export declare const dealItem: any;
+export declare const rider: any;
+export declare const order: any;
+export declare const orderItem: any;
+export declare const orderDeal: any;
