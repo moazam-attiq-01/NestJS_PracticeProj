@@ -14,7 +14,7 @@ export const DB_CONNECTION = Symbol('DB_CONNECTION')
       provide: DB_CONNECTION,
       inject: [ConfigService],
       useFactory: (configService: ConfigService): PostgresJsDatabase<typeof schema> => {
-        const connectionString = `postgresql://${configService.get('DB_USER') ?? 'postgres'}:${configService.get('DB_PASSWORD') ?? 'password'}@${configService.get('DB_HOST') ?? 'localhost'}:${configService.get('DB_PORT') ?? '5432'}/${configService.get('DB_NAME') ?? 'postgres'}`
+        const connectionString = configService.get('DATABASE_URL')
         const client = postgres(connectionString)
         return drizzle(client, { schema })
       },
