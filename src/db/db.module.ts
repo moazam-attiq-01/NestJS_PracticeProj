@@ -1,22 +1,20 @@
-import { Global, Module } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
-import * as schema from './schema'
+import { Global, Module } from '@nestjs/common';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema';
 
-export const DB_CONNECTION = Symbol('DB_CONNECTION')
+export const DB_CONNECTION = Symbol('DB_CONNECTION'); // define inline
 
 @Global()
 @Module({
   providers: [
     {
       provide: DB_CONNECTION,
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService): PostgresJsDatabase<typeof schema> => { 
-        const connectionString = configService.get('DATABASE_URL') ?? configService.get('LOCAL_DATABASE')
-        const client = postgres(connectionString)
-        return drizzle(client, { schema })
+      useFactory: () => {
+        const client = postgres(process.env.DATABASE_URL!, {
+          ssl: { rejectUnauthorized: false },
+        });
+        return drizzle(client, { schema });
       },
     },
   ],
