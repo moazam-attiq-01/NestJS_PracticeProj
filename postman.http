@@ -1,0 +1,29 @@
+
+#Admin
+POST http://localhost:3000/admin/vendor
+Content-Type: application/json
+
+{
+  "username": "ahmed",
+  "email": "ab2034941@gmail.com",
+  "password": "ahmed123",
+  "phone": "03034606113"
+}
+
+###
+DELETE http://localhost:3000/admin/vendor/1
+###
+
+
+
+
+# Auth
+POST http://localhost:3000/vendor/auth/login
+Content-Type: application/json
+
+{
+  "email": "ab2034941@gmail.com",
+  "password": "ahmed123"
+}
+
+###
