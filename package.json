@@ -79,6 +79,9 @@
     "typescript": "6.0.0-dev.20251010",
     "typescript-eslint": "^8.20.0"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",
