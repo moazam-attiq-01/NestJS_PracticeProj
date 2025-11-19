@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Inject, Post, Req, Res } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, Inject, Post, Req } from '@nestjs/common'
 import type { Request } from 'express'
 import { AuthService } from './auth.service'
 import { LoginDto } from './dto'
@@ -29,7 +29,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Req() req: Request, @Res() res: Response) {
+  async logout(@Req() req: Request) {
     try {
       await new Promise<void>((resolve, reject) => {
         req.session.destroy((err) => {
@@ -40,7 +40,6 @@ export class AuthController {
           }
         })
       })
-      res.clearCookie('connect.sid', { httpOnly: true, sameSite: 'lax' })
       return { message: 'Logged out successfully' }
     } catch (error) {
       throw new BadRequestException('Failed to logout')
