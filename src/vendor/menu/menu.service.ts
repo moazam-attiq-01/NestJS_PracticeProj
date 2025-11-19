@@ -4,37 +4,41 @@ import { DB_CONNECTION } from '../../db/db.module'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import * as schema from '../../db/schema'
 import { and, eq } from 'drizzle-orm'
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service'
 
 @Injectable()
 export class MenuService {
-  constructor(@Inject(DB_CONNECTION) private db: PostgresJsDatabase<typeof schema>) {}
+  constructor(
+    @Inject(DB_CONNECTION) private db: PostgresJsDatabase<typeof schema>,
+    private readonly cloudinary: CloudinaryService
+  ) {}
 
-  // ========== ITEM ==========
-  async createItem(data: ItemDto, file: Express.Multer.File, vendorId: number) {
-    const imagePath = `uploads/items/${file.filename}`
-
+  // ============================================================
+  // ITEM — CREATE
+  // ============================================================
+  async createItem(dto: ItemDto, imageUrl: string, cloudId: string, vendorId: number) {
     const [item] = await this.db
       .insert(schema.item)
       .values({
-        name: data.name,
-        price: Number(data.price),
-        description: data.description,
-        available: Boolean(data.available) ?? false,
-        category_id: Number(data.category_id),
+        name: dto.name,
+        price: Number(dto.price),
+        description: dto.description,
+        available: Boolean(dto.available) ?? false,
+        category_id: Number(dto.category_id),
         vendor_id: vendorId,
-        img: imagePath,
+        img: imageUrl ?? null,
+        cloud_id: cloudId ?? null
       })
       .returning()
 
-    if (data.discount && data.discount.amount > 0) {
+    if (dto.discount && dto.discount.amount > 0) {
       await this.db.insert(schema.itemDiscount).values({
         item_id: item.id,
-        amount: data.discount.amount,
-        available: Boolean(data.discount.available),
+        amount: dto.discount.amount,
+        available: Boolean(dto.discount.available),
       })
     }
 
-    // join category + discount for consistent structure
     const [fullItem] = await this.db
       .select({
         id: schema.item.id,
@@ -67,6 +71,9 @@ export class MenuService {
     }
   }
 
+  // ============================================================
+  // ITEM — GET
+  // ============================================================
   async getItems(vendorId: number) {
     const items = await this.db
       .select({
@@ -102,9 +109,18 @@ export class MenuService {
     }))
   }
 
-  async updateItem(data: ItemDto, vendorId: number, itemId: number) {
-    if (!data) throw new BadRequestException('No data provided for update');
-    
+  // ============================================================
+  // ITEM — UPDATE
+  // ============================================================
+  async updateItem(
+    dto: ItemDto,
+    vendorId: number,
+    itemId: number,
+    imageUrl?: string,
+    cloudId?: string
+  ) {
+    if (!dto) throw new BadRequestException('No data provided for update')
+
     const [item] = await this.db
       .select()
       .from(schema.item)
@@ -112,31 +128,38 @@ export class MenuService {
 
     if (!item) throw new BadRequestException('Item not found or not owned by vendor')
 
+    // delete old cloud image if new one is uploaded
+    if (imageUrl && item.cloud_id) {
+      await this.cloudinary.deleteFile(item.cloud_id)
+    }
+
     await this.db
       .update(schema.item)
       .set({
-        name: data.name ?? item.name,
-        price: data.price ?? item.price,
-        description: data.description ?? item.description,
-        category_id: data.category_id ?? item.category_id,
-        available: data.available ?? item.available,
+        name: dto.name ?? item.name,
+        price: dto.price ?? item.price,
+        description: dto.description ?? item.description,
+        category_id: dto.category_id ?? item.category_id,
+        available: dto.available ?? item.available,
+        img: imageUrl ?? item.img,
+        cloud_id: cloudId ?? item.cloud_id
       })
       .where(eq(schema.item.id, itemId))
 
-    // update discount table
-    if (data.discount) {
+    // update discount
+    if (dto.discount) {
       await this.db
         .insert(schema.itemDiscount)
         .values({
           item_id: itemId,
-          amount: data.discount.amount,
-          available: data.discount.available,
+          amount: dto.discount.amount,
+          available: dto.discount.available,
         })
         .onConflictDoUpdate({
           target: schema.itemDiscount.item_id,
           set: {
-            amount: data.discount.amount,
-            available: data.discount.available,
+            amount: dto.discount.amount,
+            available: dto.discount.available,
           },
         })
     }
@@ -144,71 +167,58 @@ export class MenuService {
     return { message: 'Item updated successfully' }
   }
 
+  // ============================================================
+  // ITEM — DELETE
+  // ============================================================
   async deleteItem(vendorId: number, itemId: number) {
-    const deleted = await this.db
-      .delete(schema.item)
-      .where(and(eq(schema.item.vendor_id, vendorId), eq(schema.item.id, itemId)))
+    const [item] = await this.db
+      .select()
+      .from(schema.item)
+      .where(and(eq(schema.item.id, itemId), eq(schema.item.vendor_id, vendorId)))
 
-    if (!deleted) {
-      throw new BadRequestException('Item not found or not owned by vendor')
+    if (!item) throw new BadRequestException('Item not found or not owned by vendor')
+
+    if (item.cloud_id) {
+      await this.cloudinary.deleteFile(item.cloud_id)
     }
+
+    await this.db.delete(schema.item).where(eq(schema.item.id, itemId))
+
     return { message: 'Item deleted successfully', itemId }
   }
 
-  // ========== DEAL ==========
-  async createDeal(data: DealDto, file: Express.Multer.File, vendorId: number) {
-    const items = typeof data.items === 'string' ? JSON.parse(data.items) : data.items
-    //const imagePath = `uploads/items/${file.filename}`
-    const imagePath = ''
+  // ============================================================
+  // DEAL — CREATE
+  // ============================================================
+  async createDeal(dto: DealDto, imageUrl: string, cloudId: string, vendorId: number) {
+    const items = typeof dto.items === 'string' ? JSON.parse(dto.items) : dto.items
+
     const [deal] = await this.db
       .insert(schema.deal)
-      .values({ name: data.name, img: imagePath, price: data.price, vendor_id: vendorId, available: data.available })
+      .values({
+        name: dto.name,
+        img: imageUrl ?? null,
+        cloud_id: cloudId ?? null,
+        price: dto.price,
+        vendor_id: vendorId,
+        available: dto.available,
+      })
       .returning()
 
     for (const i of items) {
-      await this.db.insert(schema.dealItem).values({ deal_id: deal.id, item_id: i.item_id, quantity: i.qty })
+      await this.db.insert(schema.dealItem).values({
+        deal_id: deal.id,
+        item_id: i.item_id,
+        quantity: i.qty,
+      })
     }
 
-    const rows = await this.db
-      .select({
-        deal_id: schema.deal.id,
-        deal_name: schema.deal.name,
-        deal_price: schema.deal.price,
-        deal_img: schema.deal.img,
-        deal_available: schema.deal.available,
-        created_at: schema.deal.created_at,
-        item_id: schema.item.id,
-        item_name: schema.item.name,
-        item_quantity: schema.dealItem.quantity,
-        item_category: schema.category.name,
-      })
-      .from(schema.deal)
-      .leftJoin(schema.dealItem, eq(schema.deal.id, schema.dealItem.deal_id))
-      .leftJoin(schema.item, eq(schema.dealItem.item_id, schema.item.id))
-      .leftJoin(schema.category, eq(schema.item.category_id, schema.category.id))
-      .where(eq(schema.deal.id, deal.id))
-
-    // Group items into an array
-    const fullDeal = rows.length
-      ? {
-          deal_id: rows[0].deal_id,
-          deal_name: rows[0].deal_name,
-          deal_price: rows[0].deal_price,
-          deal_img: rows[0].deal_img ?? '',
-          deal_available: rows[0].deal_available ?? false,
-          created_at: rows[0].created_at,
-          items: rows.map((row) => ({
-            itemId: row.item_id,
-            itemName: row.item_name,
-            itemQuantity: row.item_quantity,
-            itemCategory: row.item_category,
-          })),
-        }
-      : null
-
-    return fullDeal
+    return deal
   }
 
+  // ============================================================
+  // DEAL — GET
+  // ============================================================
   async getDeals(vendorId: number) {
     const rows = await this.db
       .select({
@@ -229,7 +239,6 @@ export class MenuService {
       .leftJoin(schema.category, eq(schema.item.category_id, schema.category.id))
       .where(eq(schema.deal.vendor_id, vendorId))
 
-    // Group deals and items
     const grouped: Record<number, any> = {}
 
     for (const row of rows) {
@@ -252,41 +261,71 @@ export class MenuService {
           category: row.item_category,
         })
       }
-    }    
+    }
 
     return Object.values(grouped)
   }
 
-  async updateDeal(data: DealDto, vendorId: number) {
+  // ============================================================
+  // DEAL — UPDATE
+  // ============================================================
+  async updateDeal(dto: DealDto, vendorId: number, imageUrl?: string, cloudId?: string) {
     const [existing] = await this.db
       .select()
       .from(schema.deal)
-      .where(and(eq(schema.deal.id, data.id), eq(schema.deal.vendor_id, vendorId)))
+      .where(and(eq(schema.deal.id, dto.id), eq(schema.deal.vendor_id, vendorId)))
 
     if (!existing) throw new BadRequestException('Deal not found or not owned by vendor')
 
+    // delete old cloud image if new one provided
+    if (imageUrl && existing.cloud_id) {
+      await this.cloudinary.deleteFile(existing.cloud_id)
+    }
+
     await this.db
       .update(schema.deal)
-      .set({ name: data.name, img: data.img, price: data.price, available: data.available })
-      .where(eq(schema.deal.id, data.id))
+      .set({
+        name: dto.name,
+        price: dto.price,
+        available: dto.available,
+        img: imageUrl ?? existing.img,
+        cloud_id: cloudId ?? existing.cloud_id
+      })
+      .where(eq(schema.deal.id, dto.id))
 
     // replace deal items
-    await this.db.delete(schema.dealItem).where(eq(schema.dealItem.deal_id, data.id))
-    for (const i of data.items) {
-      await this.db.insert(schema.dealItem).values({ deal_id: data.id, item_id: i.item_id, quantity: i.qty })
+    await this.db.delete(schema.dealItem).where(eq(schema.dealItem.deal_id, dto.id))
+
+    for (const i of dto.items) {
+      await this.db.insert(schema.dealItem).values({
+        deal_id: dto.id,
+        item_id: i.item_id,
+        quantity: i.qty,
+      })
     }
 
     return { message: 'Deal updated successfully' }
   }
 
+  // ============================================================
+  // DEAL — DELETE
+  // ============================================================
   async deleteDeal(vendorId: number, dealId: number) {
-    const deleted = await this.db
-      .delete(schema.deal)
-      .where(and(eq(schema.deal.vendor_id, vendorId), eq(schema.deal.id, dealId)))
-    
-    if (!deleted) {
+    const [deal] = await this.db
+      .select()
+      .from(schema.deal)
+      .where(and(eq(schema.deal.id, dealId), eq(schema.deal.vendor_id, vendorId)))
+
+    if (!deal) {
       throw new BadRequestException('Deal not found or not owned by vendor')
     }
+
+    if (deal.cloud_id) {
+      await this.cloudinary.deleteFile(deal.cloud_id)
+    }
+
+    await this.db.delete(schema.deal).where(eq(schema.deal.id, dealId))
+
     return { message: 'Deal deleted successfully', dealId }
   }
 }

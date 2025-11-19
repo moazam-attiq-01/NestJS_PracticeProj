@@ -1,5 +1,5 @@
 {
-  "id": "f98389c2-3da2-41eb-affb-265e4735f1ad",
+  "id": "5bd0ab35-9656-4036-b68f-531fdf628459",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -92,6 +92,12 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+        },
+        "cloud_id": {
+          "name": "cloud_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "price": {
           "name": "price",
@@ -266,6 +272,12 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+        },
+        "cloud_id": {
+          "name": "cloud_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "available": {
           "name": "available",

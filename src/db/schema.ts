@@ -47,6 +47,7 @@ export const item = pgTable('items', {
     .references(() => vendor.id, { onDelete: 'cascade' })
     .notNull(),
   img: varchar('image').notNull(),
+  cloud_id: varchar('cloud_id'),
   available: boolean('available'),
 })
 
@@ -69,6 +70,7 @@ export const deal = pgTable('deals', {
     .references(() => vendor.id, { onDelete: 'cascade' })
     .notNull(),
   img: varchar('image').notNull(),
+  cloud_id: varchar('cloud_id'),
   price: integer('price').notNull(),
   available: boolean('available'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
