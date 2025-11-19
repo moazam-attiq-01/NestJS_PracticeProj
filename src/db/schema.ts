@@ -17,6 +17,7 @@ export const vendor = pgTable('vendor', {
 export const category = pgTable('category', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   img: varchar('image', { length: 255 }),
+  cloud_id: varchar('cloud_id'),
   name: varchar('name', { length: 255 }).unique().notNull(),
 })
 

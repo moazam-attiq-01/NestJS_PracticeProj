@@ -1,5 +1,5 @@
 {
-  "id": "5bd0ab35-9656-4036-b68f-531fdf628459",
+  "id": "41639ba3-d0f1-4682-97b7-05c89d8a3778",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -28,6 +28,12 @@
         "image": {
           "name": "image",
           "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cloud_id": {
+          "name": "cloud_id",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
