@@ -1,11 +1,14 @@
+// api/index.ts
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 import session from 'express-session';
+
+// Import from compiled dist
+import { AppModule } from '../dist/src/app.module';
+import { PostgresExceptionFilter } from '../dist/src/utils/postgres-exception.filter';
+import { AllExceptionsFilter } from '../dist/src/utils/http-exception.filter';
 import { ConfigService } from '@nestjs/config';
-import { AppModule } from 'src/app.module';
-import { PostgresExceptionFilter } from 'src/utils/postgres-exception.filter';
-import { AllExceptionsFilter } from 'src/utils/http-exception.filter';
 
 const expressApp = express();
 let cachedApp: any;
@@ -42,7 +45,6 @@ async function createNestServer() {
     app.useGlobalFilters(new PostgresExceptionFilter());
     app.useGlobalFilters(new AllExceptionsFilter());
 
-    // Enable raw body parsing for uploads if needed
     expressApp.use(express.json({ limit: '10mb' }));
     expressApp.use(express.urlencoded({ extended: true }));
 
