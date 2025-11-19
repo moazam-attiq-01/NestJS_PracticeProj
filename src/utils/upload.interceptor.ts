@@ -1,34 +1,23 @@
-import { FileInterceptor } from '@nestjs/platform-express'
-import { diskStorage } from 'multer'
-import { join, extname } from 'path'
-import * as fs from 'fs'
+import { FileInterceptor } from '@nestjs/platform-express';
+import multer from 'multer';
 
 /**
- * Reusable UploadInterceptor
- * @param fieldName The field name in FormData ('image', 'avatar', etc.)
- * @param folder Folder inside /uploads/ to store the files
+ * UploadInterceptor for memory storage with folder name
+ * @param fieldName Name of the field in FormData
+ * @param folder Folder name to organize files (used for naming or Cloudinary)
  */
 export function UploadInterceptor(fieldName: string, folder: string) {
   return FileInterceptor(fieldName, {
-    storage: diskStorage({
-      destination: (req, file, cb) => {
-        const uploadPath = join(__dirname, `../../uploads/${folder}`)
-        if (!fs.existsSync(uploadPath)) {
-          fs.mkdirSync(uploadPath, { recursive: true })
-        }
-        cb(null, uploadPath)
-      },
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-        cb(null, uniqueSuffix + extname(file.originalname))
-      },
-    }),
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+    storage: multer.memoryStorage(), // Keep in memory for Cloudinary
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     fileFilter: (req, file, cb) => {
       if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-        return cb(new Error('Only image files are allowed!'), false)
+        return cb(new Error('Only image files are allowed!'), false);
       }
-      cb(null, true)
+      cb(null, true);
     },
-  })
+    // Optional: attach folder info to file for later use in Cloudinary
+    // You can access it via `file.folder` in controller
+    preservePath: true,
+  });
 }

@@ -10,6 +10,8 @@ import { RiderModule } from './vendor/rider/rider.module'
 import { VendorModule } from './admin/vendor/vendor.module'
 import { ProfileModule } from './vendor/profile/profile.module'
 import * as path from 'node:path'
+import { TestController } from './test/test.controller'
+import { CloudinaryModule } from './cloudinary/cloudinary.module'
 
 @Module({
   imports: [
@@ -21,8 +23,9 @@ import * as path from 'node:path'
     RiderModule,
     VendorModule,
     ProfileModule,
+    CloudinaryModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, TestController],
   providers: [AppService],
 })
 export class AppModule {}
