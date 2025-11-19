@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../dist/src/app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 import session from 'express-session';
 import { ConfigService } from '@nestjs/config';
-import { PostgresExceptionFilter } from '../dist/src/utils/postgres-exception.filter';
-import { AllExceptionsFilter } from '../dist/src/utils/http-exception.filter';
+import { AppModule } from 'src/app.module';
+import { PostgresExceptionFilter } from 'src/utils/postgres-exception.filter';
+import { AllExceptionsFilter } from 'src/utils/http-exception.filter';
 
 const expressApp = express();
 let cachedApp: any;
