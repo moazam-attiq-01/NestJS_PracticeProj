@@ -8,7 +8,7 @@ import { PostgresExceptionFilter } from '../dist/src/utils/postgres-exception.fi
 import { AllExceptionsFilter } from '../dist/src/utils/http-exception.filter';
 
 const expressApp = express();
-let cachedApp;
+let cachedApp: any;
 
 async function createNestServer() {
   if (!cachedApp) {
@@ -34,13 +34,17 @@ async function createNestServer() {
           httpOnly: true,
           maxAge: 1000 * 60 * 60 * 24,
           secure: true,
-          sameSite: 'lax'
+          sameSite: 'lax',
         },
       }),
     );
 
     app.useGlobalFilters(new PostgresExceptionFilter());
     app.useGlobalFilters(new AllExceptionsFilter());
+
+    // Enable raw body parsing for uploads if needed
+    expressApp.use(express.json({ limit: '10mb' }));
+    expressApp.use(express.urlencoded({ extended: true }));
 
     await app.init();
     cachedApp = app;
