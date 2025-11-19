@@ -5,10 +5,10 @@ import express from 'express';
 import session from 'express-session';
 
 // Import from compiled dist
-import { AppModule } from '../dist/src/app.module';
-import { PostgresExceptionFilter } from '../dist/src/utils/postgres-exception.filter';
-import { AllExceptionsFilter } from '../dist/src/utils/http-exception.filter';
 import { ConfigService } from '@nestjs/config';
+import { AppModule } from './app.module';
+import { PostgresExceptionFilter } from './utils/postgres-exception.filter';
+import { AllExceptionsFilter } from './utils/http-exception.filter';
 
 const expressApp = express();
 let cachedApp: any;
