@@ -1,4 +1,13 @@
+import { text } from 'drizzle-orm/pg-core'
 import { timestamp, pgTable, varchar, integer, boolean, primaryKey } from 'drizzle-orm/pg-core'
+
+// ============= VENDORS =============
+
+export const session = pgTable('session', {
+  id: varchar('id', { length: 128 }).primaryKey(),  // session ID
+  data: text('data').notNull(),                     // JSON string of session data
+  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(), // expiry timestamp
+})
 
 // ============= VENDORS =============
 export const vendor = pgTable('vendor', {
