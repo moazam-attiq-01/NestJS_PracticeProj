@@ -126,10 +126,9 @@ export class MenuService {
       .from(schema.item)
       .where(and(eq(schema.item.id, itemId), eq(schema.item.vendor_id, vendorId)))
 
-    if (!item) throw new BadRequestException('Item not found or not owned by vendor')
+    if (!item) throw new BadRequestException('Item not found or not owned by vendor')      
 
-    // delete old cloud image if new one is uploaded
-    if (imageUrl && item.cloud_id) {
+    if (imageUrl !== '' && item.cloud_id) {
       await this.cloudinary.deleteFile(item.cloud_id)
     }
 
@@ -141,8 +140,8 @@ export class MenuService {
         description: dto.description ?? item.description,
         category_id: dto.category_id ?? item.category_id,
         available: dto.available ?? item.available,
-        img: imageUrl ?? item.img,
-        cloud_id: cloudId ?? item.cloud_id
+        img: imageUrl !== '' ? imageUrl : item.img,
+        cloud_id: cloudId !== '' ? cloudId : item.cloud_id
       })
       .where(eq(schema.item.id, itemId))
 

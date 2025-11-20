@@ -1,5 +1,5 @@
 {
-  "id": "e55ac5a9-5953-4689-abdf-8b2cfc36b2cb",
+  "id": "3cde9222-6a81-4b86-94d5-d301ff918fa5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -793,21 +793,28 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.session": {
-      "name": "session",
+    "public.sessions": {
+      "name": "sessions",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar(128)",
+          "type": "varchar(255)",
           "primaryKey": true,
           "notNull": true
         },
-        "data": {
-          "name": "data",
-          "type": "text",
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         },
         "expires_at": {
           "name": "expires_at",
@@ -817,7 +824,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "sessions_vendor_id_vendor_id_fk": {
+          "name": "sessions_vendor_id_vendor_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "vendor",
+          "columnsFrom": [
+            "vendor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

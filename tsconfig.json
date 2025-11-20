@@ -22,8 +22,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "typeRoots": ["./src/types", "./node_modules/@types"],
-    "rootDirs": ["src", "api"]
-  },
-  "include": ["src/**/*", "api/**/*"]
+    "typeRoots": ["./src/types", "./node_modules/@types"]
+  }
 }

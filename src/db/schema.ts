@@ -1,13 +1,4 @@
-import { text } from 'drizzle-orm/pg-core'
 import { timestamp, pgTable, varchar, integer, boolean, primaryKey } from 'drizzle-orm/pg-core'
-
-// ============= VENDORS =============
-
-export const session = pgTable('session', {
-  id: varchar('id', { length: 128 }).primaryKey(),  // session ID
-  data: text('data').notNull(),                     // JSON string of session data
-  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(), // expiry timestamp
-})
 
 // ============= VENDORS =============
 export const vendor = pgTable('vendor', {
@@ -21,6 +12,16 @@ export const vendor = pgTable('vendor', {
   locked: boolean().default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
+
+// ============= SESSION =============
+export const session = pgTable('sessions', {
+  id: varchar('id', { length: 255 }).primaryKey(), // sessionId generated from express-session
+  vendor_id: integer('vendor_id')
+    .references(() => vendor.id, { onDelete: 'cascade' })
+    .notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(),
+});
 
 // ============= CATEGORIES =============
 export const category = pgTable('category', {

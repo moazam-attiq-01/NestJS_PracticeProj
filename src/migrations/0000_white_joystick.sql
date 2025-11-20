@@ -89,9 +89,10 @@ CREATE TABLE "riders" (
 	CONSTRAINT "riders_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "session" (
-	"id" varchar(128) PRIMARY KEY NOT NULL,
-	"data" text NOT NULL,
+CREATE TABLE "sessions" (
+	"id" varchar(255) PRIMARY KEY NOT NULL,
+	"vendor_id" integer NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now(),
 	"expires_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
@@ -127,5 +128,6 @@ ALTER TABLE "order_deal" ADD CONSTRAINT "order_deal_deal_id_deals_id_fk" FOREIGN
 ALTER TABLE "order_item" ADD CONSTRAINT "order_item_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_item" ADD CONSTRAINT "order_item_item_id_items_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "riders" ADD CONSTRAINT "riders_vendor_id_vendor_id_fk" FOREIGN KEY ("vendor_id") REFERENCES "public"."vendor"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_vendor_id_vendor_id_fk" FOREIGN KEY ("vendor_id") REFERENCES "public"."vendor"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "vendor_category" ADD CONSTRAINT "vendor_category_vendor_id_vendor_id_fk" FOREIGN KEY ("vendor_id") REFERENCES "public"."vendor"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "vendor_category" ADD CONSTRAINT "vendor_category_category_id_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."category"("id") ON DELETE cascade ON UPDATE no action;

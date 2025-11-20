@@ -16,16 +16,18 @@ export class AuthController {
 
   @Post('login')
   async login(@Req() req: Request, @Body() data: LoginDto) {
-    req.session.vendor = await this.authService.login(data)
-    return { vendor: req.session.vendor }
+    const vendor = await this.authService.login(data)
+    req.session.vendorId = vendor.id;
+    req.session.vendor = { id: vendor.id, username: vendor.username, email: vendor.email, };
+    return { vendor }
   }
 
   @Get('me')
   async me(@Req() req: Request) {
-    if (!req.session.vendor) return null
-    const user = await this.db.select().from(schema.vendor).where(eq(schema.vendor.id, req.session.vendor.id))
-    if (user.length === 0) return null
-    return { vendor: user[0] }
+    const vendor = req.session.vendor;
+    if (!vendor) return null
+    const user = await this.db.select().from(schema.vendor).where(eq(schema.vendor.id, vendor.id));
+    return user.length ? { vendor: user[0] } : null;
   }
 
   @Post('logout')

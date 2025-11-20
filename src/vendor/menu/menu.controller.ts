@@ -10,6 +10,7 @@ import {
   Param,
   ParseIntPipe,
   Put,
+  BadRequestException,
 } from "@nestjs/common";
 import { MenuService } from "./menu.service";
 import { DealDto, ItemDto } from "./dto";
@@ -43,17 +44,22 @@ export class MenuController {
         data.discount = eval("(" + data.discount + ")");
       }
     }
-    let imageUrl = '';
-    let cloudId = '';
+
+    let imageUrl = "";
+    let cloudId = "";
 
     if (file) {
-      const uploaded = await this.cloudinary.uploadFile(
-        file,
-        `items`,
-        `item_${vendorId}_${Date.now()}`
-      )
-      imageUrl = uploaded.secure_url;
-      cloudId = uploaded.public_id;
+      try {
+        const uploaded = await this.cloudinary.uploadFile(
+          file,
+          `items`,
+          `item_${vendorId}_${Date.now()}`
+        );
+        imageUrl = uploaded.secure_url;
+        cloudId = uploaded.public_id;
+      } catch (error) {
+        throw new BadRequestException("File upload Failed: ", error.message);
+      }
     }
     const item = await this.menuService.createItem(
       data,
@@ -70,10 +76,21 @@ export class MenuController {
     @Vendor("id") vendorId: number,
     @Param("id", ParseIntPipe) itemId: number,
     @UploadedFile() file: Express.Multer.File,
-    @Body() data: ItemDto
+    @Body() body: any
   ) {
-    let imageUrl = '';
-    let cloudId = '';
+
+    const data: ItemDto = {
+      id: itemId,
+      name: body.name,
+      price: Number(body.price),
+      description: body.description,
+      available: body.available === "true",
+      category_id: Number(body.category_id),
+      discount: body.discount ? JSON.parse(body.discount) : undefined,
+    };
+
+    let imageUrl = "";
+    let cloudId = "";
 
     if (file) {
       const uploaded = await this.cloudinary.uploadFile(
@@ -81,11 +98,11 @@ export class MenuController {
         `items`,
         `item_${vendorId}_${itemId}_${Date.now()}`
       );
-
       imageUrl = uploaded.secure_url;
       cloudId = uploaded.public_id;
     }
 
+    // Update item in DB
     const response = await this.menuService.updateItem(
       data,
       vendorId,
@@ -126,8 +143,8 @@ export class MenuController {
       data.price = Number(data.price);
     }
 
-    let imageUrl = '';
-    let cloudId = '';
+    let imageUrl = "";
+    let cloudId = "";
 
     if (file) {
       const uploaded = await this.cloudinary.uploadFile(
@@ -151,8 +168,6 @@ export class MenuController {
   @Get("deals")
   async getDeals(@Vendor("id") vendorId: number) {
     const deals = await this.menuService.getDeals(vendorId);
-    console.log(deals);
-
     return { data: deals };
   }
 
@@ -163,8 +178,8 @@ export class MenuController {
     @UploadedFile() file: Express.Multer.File,
     @Body() data: DealDto
   ) {
-    let imageUrl = '';
-    let cloudId = '';
+    let imageUrl = "";
+    let cloudId = "";
 
     if (file) {
       const uploaded = await this.cloudinary.uploadFile(
