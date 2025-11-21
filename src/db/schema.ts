@@ -111,6 +111,7 @@ export const rider = pgTable('riders', {
   password: varchar('password', { length: 255 }).notNull(),
   phone: varchar('phone', { length: 20 }).notNull(),
   image: varchar('image'),
+  cloud_id: varchar('cloud_id'),
   available: boolean('available').default(true),
   status: integer().default(0),
   vendor_id: integer('vendor_id').references(() => vendor.id, { onDelete: 'cascade' }),

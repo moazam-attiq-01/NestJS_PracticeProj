@@ -24,10 +24,15 @@ export class RiderDto {
   image?: string
 
   @IsOptional()
+  @IsString()
+  cloud_id?: string
+
+  @IsOptional()
   @IsBoolean()
   available?: boolean
 
   @IsOptional()
   @IsInt()
   status?: number
+
 }
