@@ -19,7 +19,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module'
     DbModule,
     MenuModule,
     OrdersModule,
-    RiderModule,
+    // RiderModule,
     VendorModule,
     ProfileModule,
     CloudinaryModule,
