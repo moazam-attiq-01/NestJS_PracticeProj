@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
   app.enableCors({
-    origin: ["http://localhost:5174", "https://areena-eats-c9muhuikh-moazam-attiq-01s-projects.vercel.app/"],
+    origin: ["http://localhost:5173", "https://areena-eats-c9muhuikh-moazam-attiq-01s-projects.vercel.app/"],
     credentials: true,
   });
 
